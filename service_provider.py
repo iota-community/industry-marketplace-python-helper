@@ -1,5 +1,4 @@
 from imp import IndustryMarketplace
-import sys
 
 class ServiceProvider(IndustryMarketplace):
     name = 'DronesRus'

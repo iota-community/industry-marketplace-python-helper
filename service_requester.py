@@ -18,10 +18,12 @@ class ServiceRequester(IndustryMarketplace):
 if __name__ == '__main__':
 
     imp = ServiceRequester()
-
+    
+    # Either run it as a listeing service
     if len(sys.argv) == 1:
         imp.listen()
     
+    # Or as a one time command requesting a drone!
     if len(sys.argv) == 2 and sys.argv[1] == 'request_drone':
 
         values = {
