@@ -161,7 +161,7 @@ class IndustryMarketplace:
         
         user = self.user()
 
-        irdi = proposal_data.get('submodels')[0].get('identification').get('id')
+        irdi = proposal_data['dataElements']['submodels'][0]['identification']['id']
 
         data = {
             'messageType': 'acceptProposal',

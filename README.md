@@ -27,3 +27,19 @@ If you wish to run 2 instances of the Market Manager on one machine without havi
 Virtual machines or containers you could just use 2 checkouts of the source code and make some
 changes to the second one in terms of ports so you can run both at the same time. More instructions
 and patch files for this can be found in `patches/README.md`.
+
+To run the included demo on 1 machine install 2 Market Managers on your machine 
+using the provided instructions in `patches/README.md`. After that do the following:
+
+
+- Run the provider ServiceApp by executing `yarn run dev` in `provider/ServiceApp` in a new shell window (port 4001)
+- Run the requester ServiceApp by executing `yarn run dev` in `requester/ServiceApp` in a new shell window (port 4000)
+- Run the provider listener python app `python manage.py service_provider.py` in a new shell window
+- Run the requester listener python app `python manage.py service_requester.py` in a new shell window
+
+You now have 4 services in 4 windows up and running.
+You can start the automated interaction by executing the following in another new shell window:
+
+`python manage.py service_requester request_drone`
+
+This should start a chain of sending out a cfp; responding with a 10i proposal, and accepting that proposal automatically.
