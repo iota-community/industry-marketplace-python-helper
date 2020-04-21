@@ -4,7 +4,7 @@ import sys
 class ServiceRequester(IndustryMarketplace):
     name = 'ProSumer'
     service_provider = False
-    fund_wallet = False
+    fund_wallet = True
     gps_coords = '54.000, 4.000'
 
     endpoint = 'http://localhost:4000'

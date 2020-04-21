@@ -1,5 +1,5 @@
 diff --git a/ServiceApp/server/src/config.json b/ServiceApp/server/src/config.json
-index 1a63fc6..8a4aa8c 100644
+index 1a63fc6..ad70c56 100644
 --- a/ServiceApp/server/src/config.json
 +++ b/ServiceApp/server/src/config.json
 @@ -1,6 +1,6 @@
@@ -10,9 +10,12 @@ index 1a63fc6..8a4aa8c 100644
          "prefix": "SEMARKET",
          "trustedIdentities" : [
              "did:IOTA:FO9FJMZEQLYMZSBGXUAAKFTPGNYIWRZRPJOFFPRQIFWH9JVBKRJDVQSVXNCYBSQD9ZZVQXVXOTANSKDAK"
-@@ -29,10 +29,10 @@
+@@ -27,12 +27,12 @@
+         "0173-1#01-BAH005#005"
+     ],
      "dataRequest": ["0173-1#01-BAF777#004", "0173-1#01-BAF888#004"],
-     "faucet": "https://api.marketplace.tangle.works/semarket",
+-    "faucet": "https://api.marketplace.tangle.works/semarket",
++    "faucet": "https://comnet-faucet.iota.works",
      "faucetAmount": 2000,
 -    "provider": "https://iri01.bare01.devnet.iota.cafe",
 +    "provider": "https://comnet.iota.works",

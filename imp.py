@@ -75,6 +75,7 @@ class IndustryMarketplace:
     def api(self, uri, data=None):
         if data:
             resp = requests.post('%s/%s' % (self.endpoint, uri), json=data, timeout=15)
+            self.log('POST body: %s' % json.dumps(data))
             return resp.json()
         else:
             resp = requests.get('%s/%s' % (self.endpoint, uri), timeout=15)
