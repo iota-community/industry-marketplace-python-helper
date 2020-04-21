@@ -1,9 +1,9 @@
-# Industry Marketplace Python Client Library
+# Industry Marketplace Python Helper
 
 ## This is a work in progress, it's not finished or feature complete yet, PR's welcome!
 
-This helper class will allow you to easily create Industry Marketplace
-Service providers or Service requesters with custom implementations.
+This helper repository will allow you to easily create Industry Marketplace
+Service providers or Service requesters with custom implementations using Python.
 
 The provided examples `service_provider.py` and `service_requester.py` can be 
 altered to your needs.
@@ -19,6 +19,15 @@ Using Python 3.6+ install the requirements with:
 
 Then run `python service_provider.py` for a service provider, or
 `python service_requester.py` for a service requester.
+
+## eCl@ss whitelisted attributes and IRDI's
+
+The Industry Marketplace currently has a whitelisted set of IRDI's and attributes that can 
+be used with the IOTA implementation. The first time you use the Industry Marketplace Python
+helper this whitelist will be downloaded for you and will reside in `operations.json` and the
+attributes belong to it in `eclass.json` from there on. 
+If you want them refreshed just delete them; The next time you use this helper it will automatically
+download them again from the [repository](https://github.com/iotaledger/industry_4.0_language).
 
 
 ## Running 2 market managers next to one another

@@ -29,6 +29,7 @@ class IndustryMarketplace:
     # The endpoint of the ServiceApp Node application
     endpoint = 'http://localhost:4000'
     eclass = None
+    operations = None
 
 
     def __init__(self):
@@ -48,6 +49,14 @@ class IndustryMarketplace:
                 self.eclass = resp.json()
         else:
             self.eclass = json.loads(open('eclass.json', 'r').read())
+        
+        if not os.path.exists('operations.json'):
+            with open('operations.json', 'wb') as fh:
+                resp = requests.get('https://raw.githubusercontent.com/iotaledger/industry_4.0_language/master/catalog/operations.json')
+                fh.write(resp.content)
+                self.operations = resp.json()
+        else:
+            self.operations = json.loads(open('operations.json', 'r').read())
 
     def config(self):
         data = {
