@@ -1,0 +1,59 @@
+diff --git a/ServiceApp/package.json b/ServiceApp/package.json
+index d70e4bd..26c538e 100644
+--- a/ServiceApp/package.json
++++ b/ServiceApp/package.json
+@@ -41,7 +41,7 @@
+     "server": "cd server && yarn start-dev",
+     "server-build": "cd server && yarn build",
+     "dev": "yarn install-all && yarn server-build && concurrently --kill-others-on-fail \"yarn client\" \"cd server && yarn start-dev\"",
+-    "start": "react-scripts start",
++    "start": "PORT=3001 react-scripts start",
+     "build": "react-scripts build",
+     "new-wallet": "cd server/build/src/utils/ && node userHelper.js --create wallet",
+     "new-user": "f(){ cd server/build/src/utils/ && node userHelper.js --create user --role $1 --name $2 --location $3;};f"
+@@ -52,7 +52,7 @@
+   "engines": {
+     "node": ">=10.0"
+   },
+-  "proxy": "http://localhost:4000/",
++  "proxy": "http://localhost:4001/",
+   "browserslist": [
+     ">0.2%",
+     "not dead",
+diff --git a/ServiceApp/server/package.json b/ServiceApp/server/package.json
+index 98bdd37..8c9461c 100644
+--- a/ServiceApp/server/package.json
++++ b/ServiceApp/server/package.json
+@@ -15,7 +15,7 @@
+         "build-compile": "tsc && copyfiles \"./src/Schemas/*.json\" \"./build\"",
+         "build-watch": "tsc --watch",
+         "build": "npm-run-all build-clean build-compile",
+-        "serve-mon": "nodemon ./build/src/index",
++        "serve-mon": "PORT=4001 nodemon ./build/src/index",
+         "start-dev": "run-p serve-mon build-watch",
+         "start": "node ./build/src/index",
+         "deploy": "now --docker"
+diff --git a/ServiceApp/server/src/config.json b/ServiceApp/server/src/config.json
+index 1a63fc6..66ff522 100644
+--- a/ServiceApp/server/src/config.json
++++ b/ServiceApp/server/src/config.json
+@@ -7,7 +7,7 @@
+         ]
+     },
+     "mqttConfig": {
+-        "domain": "http://localhost:4000",
++        "domain": "http://localhost:4001",
+         "broker": "mqtt://test.mosquitto.org"
+     },
+     "database": "../../../db/marketmanager.sqlite3",
+diff --git a/ServiceApp/src/config.json b/ServiceApp/src/config.json
+index 46db332..0fb014a 100644
+--- a/ServiceApp/src/config.json
++++ b/ServiceApp/src/config.json
+@@ -1,5 +1,5 @@
+ {
+-  "domain": "http://localhost:4000",
++  "domain": "http://localhost:4001",
+   "addressApi": "https://us-central1-semarket-iota.cloudfunctions.net/location",
+   "googleMaps": "https://www.google.com/maps/search/",
+   "waitingTime": 10,

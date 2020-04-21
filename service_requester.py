@@ -6,13 +6,18 @@ class ServiceRequester(IndustryMarketplace):
     service_provider = False
     fund_wallet = False
     gps_coords = '54.000, 4.000'
+
+    endpoint = 'http://localhost:4000'
     
     def on_proposal(self, data):
         '''
         Always accept the proposal automatically 
         '''
         print('Accepting proposal')
-        self.accept_proposal(data)
+        try:
+            self.accept_proposal(data)
+        except Exception as e:
+            print('Error on accepting', e)
 
 
 if __name__ == '__main__':

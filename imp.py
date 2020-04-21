@@ -2,6 +2,7 @@ import requests
 import paho.mqtt.client as mqtt
 import datetime
 import json
+import os
 import pprint
 
 
@@ -27,12 +28,27 @@ class IndustryMarketplace:
     
     # The endpoint of the ServiceApp Node application
     endpoint = 'http://localhost:4000'
+    eclass = None
 
 
     def __init__(self):
         self.mqtt_client = mqtt.Client()
-        self.config()
-    
+        self.update_eclass_whitelist()
+
+    def update_eclass_whitelist(self):
+        '''
+        Function to load the eclass whitelist or create it from it's source
+        if it does not exist. Only these IRDI's and Attributes can be used
+        with the Industry Marketplace right now.
+        '''
+        if not os.path.exists('eclass.json'):
+            with open('eclass.json', 'wb') as fh:
+                resp = requests.get('https://raw.githubusercontent.com/iotaledger/industry_4.0_language/master/catalog/eClass.json')
+                fh.write(resp.content)
+                self.eclass = resp.json()
+        else:
+            self.eclass = json.loads(open('eclass.json', 'r').read())
+
     def config(self):
         data = {
             'name': self.name, 
@@ -120,7 +136,7 @@ class IndustryMarketplace:
         
         user = self.user()
 
-        irdi = proposal_data.get('submodels')[0].get('identification').get('id')
+        irdi = proposal_data['dataElements']['submodels'][0]['identification']['id']
 
         data = {
             'messageType': 'proposal',
@@ -135,6 +151,7 @@ class IndustryMarketplace:
         ret = self.api('proposal', data=data)
         self.log(ret)
         print(ret)
+        return ret
 
 
     def accept_proposal(self, proposal_data, reply_time=10):
@@ -166,6 +183,7 @@ class IndustryMarketplace:
     
 
     def listen(self):
+        self.config()
         data = self.api('mqtt', {'message': 'subscribe'})
         if not data.get('success'):
             raise ValueError('Unable to subscribe to MQTT stream: %s' % data.get('error'))
@@ -190,6 +208,16 @@ class IndustryMarketplace:
 
             if data['data']['messageType'] == 'proposal':
                 self.on_proposal(data['data']['data'])
+
+            elif data['data']['messageType'] == 'callForProposal':
+                data = data['data']['data']
+                first_request = data['dataElements']['submodels'][0]['identification']
+                irdi = first_request['id']
+                submodels = first_request['submodelElements']
+                submodeldict = dict([(x['semanticId'], x) for x in submodels])
+
+                self.on_cfp(data, irdi=irdi, submodels=submodeldict)
+
             else:
                 self.log('Unhandled message type: %s' % data['data']['messageType'])
             
@@ -203,6 +231,14 @@ class IndustryMarketplace:
         '''
         
         self.log('`[WARNING] on_proposal` function not implemented yet, you might want to implement this!')
+    
+    def on_cfp(self, data, irdi=None, submodels=None):
+        '''
+        This function is called as soon as a call for proposal is received
+        Implement this function to do what you need as you please
+        '''
+        
+        self.log('`[WARNING] on_cfp` function not implemented yet, you might want to implement this!')
 
 
     #TODO: Implement other callback functions

@@ -1,0 +1,38 @@
+diff --git a/ServiceApp/server/src/config.json b/ServiceApp/server/src/config.json
+index 1a63fc6..8a4aa8c 100644
+--- a/ServiceApp/server/src/config.json
++++ b/ServiceApp/server/src/config.json
+@@ -1,6 +1,6 @@
+ {
+     "zmq": {
+-        "endpoint": "tcp://zmq.devnet.iota.org:5556",
++        "endpoint": "tcp://comnet.iota.works:5556",
+         "prefix": "SEMARKET",
+         "trustedIdentities" : [
+             "did:IOTA:FO9FJMZEQLYMZSBGXUAAKFTPGNYIWRZRPJOFFPRQIFWH9JVBKRJDVQSVXNCYBSQD9ZZVQXVXOTANSKDAK"
+@@ -29,10 +29,10 @@
+     "dataRequest": ["0173-1#01-BAF777#004", "0173-1#01-BAF888#004"],
+     "faucet": "https://api.marketplace.tangle.works/semarket",
+     "faucetAmount": 2000,
+-    "provider": "https://iri01.bare01.devnet.iota.cafe",
++    "provider": "https://comnet.iota.works",
+     "security": 2,
+     "depth": 3,
+-    "minWeightMagnitude": 9,
++    "minWeightMagnitude": 10,
+     "defaultAddress": "HELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDHELLOWORLDD",
+     "demoSensorData": {
+         "conversationId": "",
+diff --git a/ServiceApp/src/config.json b/ServiceApp/src/config.json
+index 46db332..055b6f9 100644
+--- a/ServiceApp/src/config.json
++++ b/ServiceApp/src/config.json
+@@ -4,7 +4,7 @@
+   "googleMaps": "https://www.google.com/maps/search/",
+   "waitingTime": 10,
+   "googleAnalyticsId": "UA-143368819-1",
+-  "provider": "https://iri01.bare01.devnet.iota.cafe",
++  "provider": "https://comnet.iota.works",
+   "sensorDataDomain": "https://us-central1-datamarket-617e1.cloudfunctions.net/stream?",
+   "eClassCatalog": "https://www.eclasscontent.com/index.php?action=cc2prdet&language=en&version=11.0&pridatt=",
+   "datePickerFormat": "dd-MM-yyyy HH:mm"
