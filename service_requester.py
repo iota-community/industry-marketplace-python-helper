@@ -14,10 +14,10 @@ class ServiceRequester(IndustryMarketplace):
         '''
         Accept only if the price is between 5 and 15
         '''
-        price = submodels['0173-1#02-AAJ333#002']['value']
-        self.log('Received proposal for %si' % price)
-
         try:
+            price = self.get_price(irdi, submodels)
+            self.log('Received proposal for %si' % price)
+
             if price >= 5 and price <= 15:
                 self.log('Accepting proposal')
                 self.accept_proposal(data)
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
         values = {
             '0173-1#02-AAP788#001': 2,
-            '0173-1#02-AAY979#001': '10:00',
+            '0173-1#02-AAY979#001': 10,
             '0173-1#02-BAF163#002': '54.4321, 4.5210',
         }
 

@@ -59,6 +59,15 @@ class IndustryMarketplace:
         else:
             self.operations = json.loads(open('operations.json', 'r').read())
 
+    def get_price(self, irdi, submodels):
+        '''
+        Get the price for a irdi from the submodels
+        '''
+        try:
+            return [x.value for x in self.eclass[irdi]['submodelElements'] if x['idShort'] == 'price'][0]
+        except IndexError:
+            return None
+
     def config(self):
         data = {
             'name': self.name, 
