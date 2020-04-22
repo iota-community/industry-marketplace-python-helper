@@ -1,4 +1,5 @@
 from imp import IndustryMarketplace
+import random
 import pprint
 
 class ServiceProvider(IndustryMarketplace):
@@ -20,9 +21,9 @@ class ServiceProvider(IndustryMarketplace):
         #pprint.pprint(submodels)
         
         if irdi == '0173-1#01-AAJ336#002':
-            price = 10
+            price = random.randint(10, 20)
         elif irdi == '0173-1#01-AAO742#002':
-            price = 5
+            price = random.randint(5, 9)
         else:
             print('We only do Drone transport and EV charging, ignore this one!')
             return
