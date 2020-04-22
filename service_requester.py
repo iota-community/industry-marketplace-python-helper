@@ -14,22 +14,22 @@ class ServiceRequester(IndustryMarketplace):
         '''
         Accept only if the price is between 5 and 15
         '''
-        print('Received proposal')
         price = submodels['0173-1#02-AAJ333#002']['value']
+        self.log('Received proposal for %si' % price)
 
         try:
             if price >= 5 and price <= 15:
-                print('Accepting proposal')
+                self.log('Accepting proposal')
                 self.accept_proposal(data)
             else:
-                print('Rejecting proposal')
+                self.log('Rejecting proposal')
                 self.reject_proposal(data)
         except Exception as e:
-            print('Error on accepting', e)
+            self.log('Error on accepting', e)
             pprint.pprint(data)
 
     def on_inform_confirm(self, data, irdi, submodels):
-        print('Offer confirmed, time to pay')
+        self.log('Offer confirmed, time to pay')
         self.inform_payment(data)
 
 
@@ -52,3 +52,14 @@ if __name__ == '__main__':
 
         ret = imp.cfp(irdi='0173-1#01-AAJ336#002', values=values, location='54.321, 4.123')
         #pprint.pprint(ret)
+    
+    if len(sys.argv) == 2 and sys.argv[1] == 'drone_inspection':
+
+        values = {
+            '0173-1#02-AAP788#001': 2,
+            '0173-1#02-AAY979#001': '10:00',
+            '0173-1#02-BAF163#002': '54.4321, 4.5210',
+        }
+
+        ret = imp.cfp(irdi='0173-1#01-AAP788#001', values=values, location='54.321, 4.123')
+        pprint.pprint(ret)

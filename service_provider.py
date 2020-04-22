@@ -16,8 +16,8 @@ class ServiceProvider(IndustryMarketplace):
         You can use the supplied irdi and submodels to define a price if you like
         '''
 
-        print('Call for Proposal received for irdi %s!' % irdi)
-        #print('Submodels: ')
+        self.log('Call for Proposal received for irdi %s!' % irdi)
+        #self.log('Submodels: ')
         #pprint.pprint(submodels)
         
         if irdi == '0173-1#01-AAJ336#002':
@@ -25,28 +25,28 @@ class ServiceProvider(IndustryMarketplace):
         elif irdi == '0173-1#01-AAO742#002':
             price = random.randint(5, 9)
         else:
-            print('We only do Drone transport and EV charging, ignore this one!')
+            self.log('We only do Drone transport and EV charging, ignore this one!')
             return
 
         try:
             ret = self.proposal(data, price_in_iota=price)
         except Exception as e:
-            print('Unable to send proposal', e)
+            self.log('Unable to send proposal', e)
         
-        print('proposal sent!')
+        self.log('proposal sent! Requesting %si for this service' % price)
 
     def on_accept_proposal(self, data, irdi, submodels):
-        print('Proposal accepted! Start fulfilling')
-        print('Sending inform confirm')
+        self.log('Proposal accepted! Start fulfilling')
+        self.log('Sending inform confirm')
         ret = self.inform_confirm(data)
-        #print(ret)
+        #self.log(ret)
 
     def on_reject_proposal(self, data, irdi, submodels):
-        print('Proposal rejected! Either do nothing or offer a Discount?')
+        self.log('Proposal rejected! Either do nothing or offer a Discount?')
         #pprint.pprint(data)
 
     def on_inform_payment(self, data, irdi, submodels):
-        print('Payment received! IMP transaction done!')
+        self.log('Payment received! IMP transaction done!')
         #pprint.pprint(data)
 
 
