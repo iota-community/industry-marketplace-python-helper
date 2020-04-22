@@ -1,4 +1,5 @@
 from imp import IndustryMarketplace
+import pprint
 import sys
 
 class ServiceRequester(IndustryMarketplace):
@@ -7,17 +8,29 @@ class ServiceRequester(IndustryMarketplace):
     fund_wallet = True
     gps_coords = '54.000, 4.000'
 
-    endpoint = 'http://localhost:4000'
+    endpoint = 'http://localhost:4001'
     
-    def on_proposal(self, data):
+    def on_proposal(self, data, irdi, submodels):
         '''
-        Always accept the proposal automatically 
+        Accept only if the price is between 5 and 15
         '''
-        print('Accepting proposal')
+        print('Received proposal')
+        price = submodels['0173-1#02-AAJ333#002']['value']
+
         try:
-            self.accept_proposal(data)
+            if price >= 5 and price <= 15:
+                print('Accepting proposal')
+                self.accept_proposal(data)
+            else:
+                print('Rejecting proposal')
+                self.reject_proposal(data)
         except Exception as e:
             print('Error on accepting', e)
+            pprint.pprint(data)
+
+    def on_inform_confirm(self, data, irdi, submodels):
+        print('Offer confirmed, time to pay')
+        self.inform_payment(data)
 
 
 if __name__ == '__main__':
@@ -37,4 +50,5 @@ if __name__ == '__main__':
             '0173-1#02-AAO631#002': '54.4321, 4.5210',
         }
 
-        imp.cfp(irdi='0173-1#01-AAJ336#002', values=values, location='54.321, 4.123')
+        ret = imp.cfp(irdi='0173-1#01-AAJ336#002', values=values, location='54.321, 4.123')
+        #pprint.pprint(ret)

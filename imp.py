@@ -19,13 +19,14 @@ class IndustryMarketplace:
     name = 'Anonymous'
     fund_wallet = False
     gps_coords = None
+    reply_time = 10
     
     # MQTT settings, leave as is to work out of the box with the ServiceApp
     mqtt_timeout = 60
     mqtt_port = 1883
     mqtt_id = None
     mqtt_broker = 'test.mosquitto.org'
-    
+
     # The endpoint of the ServiceApp Node application
     endpoint = 'http://localhost:4000'
     eclass = None
@@ -75,7 +76,7 @@ class IndustryMarketplace:
     def api(self, uri, data=None):
         if data:
             resp = requests.post('%s/%s' % (self.endpoint, uri), json=data, timeout=15)
-            self.log('POST body: %s' % json.dumps(data))
+            #self.log('POST body: %s' % json.dumps(data))
             return resp.json()
         else:
             resp = requests.get('%s/%s' % (self.endpoint, uri), timeout=15)
@@ -83,15 +84,14 @@ class IndustryMarketplace:
 
     def user(self):
         user = self.api('user')
-        self.log(user)
+        #self.log(user)
         return user
 
-    def cfp(self, irdi, reply_time=10, location=None, start_at=None, end_at=None, values=None):
+    def cfp(self, irdi, location=None, start_at=None, end_at=None, values=None):
         '''
         Send a call for proposal as a service requester
 
         irdi: ecl@ss irdi number for requested service/product, see https://www.eclasscontent.com
-        reply_time: amount of minutes a reply can be expected
         location: LAT,LON
         start_at: Datetime object, if None defaults to now
         end_at: Datetime object, if None defaults to 10 minutes from now
@@ -120,7 +120,7 @@ class IndustryMarketplace:
             'irdi': irdi,
             'userId': user.get('id'),
             'userName': user.get('name'),
-            'replyTime': reply_time,
+            'replyTime': self.reply_time,
             'location': location,
             'startTimestamp': start_ts,
             'endTimestamp': end_ts,
@@ -131,11 +131,12 @@ class IndustryMarketplace:
         pprint.pprint(data)
 
         ret = self.api('cfp', data=data)
-        self.log(ret)
-        print(ret)
+        #self.log(ret)
+        return ret
+        #print(ret)
  
     
-    def proposal(self, proposal_data, price_in_iota, reply_time=10):
+    def proposal(self, proposal_data, price_in_iota):
         '''
         Send a proposal as a response to a call for proposal
         Takes the original message it replies to as the `proposal_data` argument
@@ -153,18 +154,18 @@ class IndustryMarketplace:
             'irdi': irdi,
             'userId': user.get('id'),
             'userName': user.get('name'),
-            'replyTime': reply_time,
+            'replyTime': self.reply_time,
             'price': int(price_in_iota),
             'originalMessage': proposal_data
         }
 
         ret = self.api('proposal', data=data)
-        self.log(ret)
-        print(ret)
+        #self.log(ret)
+        #print(ret)
         return ret
 
 
-    def accept_proposal(self, proposal_data, reply_time=10):
+    def accept_proposal(self, proposal_data):
 
         if self.service_provider:
             raise ValueError('Only Service Requesters are allowed to call this method')
@@ -172,28 +173,94 @@ class IndustryMarketplace:
         user = self.user()
 
         irdi = proposal_data['dataElements']['submodels'][0]['identification']['id']
+        price = proposal_data['frame'].get('price')
 
         data = {
             'messageType': 'acceptProposal',
             'irdi': irdi,
             'userId': user.get('id'),
             'userName': user.get('name'),
-            'replyTime': reply_time,
+            'replyTime': self.reply_time,
+            'originalMessage': proposal_data
         }
 
-        pprint.pprint(data)
-
         ret = self.api('acceptProposal', data=data)
-        self.log(ret)
-        print(ret)
-
-
-    def decline_proposal(self, proposal_data, reply_time=10):
-        raise NotImplementedError("To be built")
+        return ret
     
 
-    def listen(self):
+    def inform_confirm(self, proposal_data):
+
+        if not self.service_provider:
+            raise ValueError('Only Service Providers are allowed to call this method')
+        
+        user = self.user()
+
+        irdi = proposal_data['dataElements']['submodels'][0]['identification']['id']
+        price = proposal_data['frame'].get('price')
+
+        data = {
+            'messageType': 'informConfirm',
+            'irdi': irdi,
+            'price': price,
+            'userId': user.get('id'),
+            'userName': user.get('name'),
+            'replyTime': self.reply_time,
+            'originalMessage': proposal_data
+        }
+
+        ret = self.api('informConfirm', data=data)
+        return ret
+    
+    def inform_payment(self, proposal_data):
+
+        if self.service_provider:
+            raise ValueError('Only Service Requesters are allowed to call this method')
+        
+        user = self.user()
+
+        irdi = proposal_data['dataElements']['submodels'][0]['identification']['id']
+        price = proposal_data['frame'].get('price')
+
+        data = {
+            'messageType': 'informPayment',
+            'irdi': irdi,
+            'price': price,
+            'userId': user.get('id'),
+            'userName': user.get('name'),
+            'replyTime': self.reply_time,
+            'originalMessage': proposal_data
+        }
+
+        ret = self.api('informPayment', data=data)
+        return ret
+
+
+    def reject_proposal(self, proposal_data):
+        if self.service_provider:
+            raise ValueError('Only Service Requesters are allowed to call this method')
+        
+        user = self.user()
+
+        irdi = proposal_data['dataElements']['submodels'][0]['identification']['id']
+        price = proposal_data['frame'].get('price')
+
+        data = {
+            'messageType': 'rejectProposal',
+            'price': price,
+            'irdi': irdi,
+            'userId': user.get('id'),
+            'userName': user.get('name'),
+            'replyTime': self.reply_time,
+            'originalMessage': proposal_data
+        }
+
+        ret = self.api('rejectProposal', data=data)
+        return ret
+    
+
+    def listen(self, mqtt=False):
         self.config()
+
         data = self.api('mqtt', {'message': 'subscribe'})
         if not data.get('success'):
             raise ValueError('Unable to subscribe to MQTT stream: %s' % data.get('error'))
@@ -207,40 +274,29 @@ class IndustryMarketplace:
     def log(self, message):
         print('[%s] %s' % (datetime.datetime.now(), message))
 
-    def on_message(self, client, userdata, message):
-        try:
-            data = json.loads(message.payload)
-        except json.decoder.JSONDecodeError:
-            self.log('Unable to decode, no json found')
-        
-        try:
-            self.log('Received %s from %s' % (data['data']['messageType'], data['data']['data']['userName']))
-
-            if data['data']['messageType'] == 'proposal':
-                self.on_proposal(data['data']['data'])
-
-            elif data['data']['messageType'] == 'callForProposal':
-                data = data['data']['data']
-                first_request = data['dataElements']['submodels'][0]['identification']
-                irdi = first_request['id']
-                submodels = first_request['submodelElements']
-                submodeldict = dict([(x['semanticId'], x) for x in submodels])
-
-                self.on_cfp(data, irdi=irdi, submodels=submodeldict)
-
-            else:
-                self.log('Unhandled message type: %s' % data['data']['messageType'])
-            
-        except KeyError as e:
-            self.log('Invalid message format for data (%s) - %s' % (data, e))
-
-    def on_proposal(self, data):
+    def on_proposal(self, data, irdi=None, submodels=None):
         '''
         This function is called as soon as a proposal is received
         Implement this function to do what you need as you please
         '''
         
         self.log('`[WARNING] on_proposal` function not implemented yet, you might want to implement this!')
+    
+    def on_inform_confirm(self, data, irdi=None, submodels=None):
+        '''
+        This function is called as soon as a fulfillment has been confirmed
+        Implement this function to do what you need as you please
+        '''
+        
+        self.log('`[WARNING] on_inform_confirm` function not implemented yet, you might want to implement this!')
+    
+    def on_inform_payment(self, data, irdi=None, submodels=None):
+        '''
+        This function is called as soon as a payment has been completed
+        Implement this function to do what you need as you please
+        '''
+        
+        self.log('`[WARNING] on_inform_payment` function not implemented yet, you might want to implement this!')
     
     def on_cfp(self, data, irdi=None, submodels=None):
         '''
@@ -250,8 +306,64 @@ class IndustryMarketplace:
         
         self.log('`[WARNING] on_cfp` function not implemented yet, you might want to implement this!')
 
+    def on_accept_proposal(self, data, irdi=None, submodels=None):
+        '''
+        This function is called as soon as a proposal is accepted
+        Implement this function to do what you need as you please
+        '''
+        
+        self.log('`[WARNING] on_accept_proposal` function not implemented yet, you might want to implement this!')
+    
+    def on_reject_proposal(self, data, irdi=None, submodels=None):
+        '''
+        This function is called as soon as a proposal is rejected
+        Implement this function to do what you need as you please
+        '''
+        
+        self.log('`[WARNING] on_reject_proposal` function not implemented yet, you might want to implement this!')
+
 
     #TODO: Implement other callback functions
+
+    def on_message(self, client, userdata, message):
+        try:
+            data = json.loads(message.payload)
+        except json.decoder.JSONDecodeError:
+            self.log('Unable to decode, no json found')
+        
+        try:
+            self.log('Received %s from %s' % (data['data']['messageType'], data['data']['data']['userName']))
+
+            dat = data['data']['data']
+            first_request = dat['dataElements']['submodels'][0]['identification']
+            irdi = first_request['id']
+            submodels = first_request['submodelElements']
+            submodeldict = dict([(x['semanticId'], x) for x in submodels])
+
+
+            if data['data']['messageType'] == 'proposal':
+                self.on_proposal(dat, irdi=irdi, submodels=submodeldict)
+            
+            elif data['data']['messageType'] == 'acceptProposal':
+                self.on_accept_proposal(dat, irdi=irdi, submodels=submodeldict)
+            
+            elif data['data']['messageType'] == 'rejectProposal':
+                self.on_reject_proposal(dat, irdi=irdi, submodels=submodeldict)
+            
+            elif data['data']['messageType'] == 'informConfirm':
+                self.on_inform_confirm(dat, irdi=irdi, submodels=submodeldict)
+            
+            elif data['data']['messageType'] == 'informPayment':
+                self.on_inform_payment(dat, irdi=irdi, submodels=submodeldict)
+
+            elif data['data']['messageType'] == 'callForProposal':
+                self.on_cfp(dat, irdi=irdi, submodels=submodeldict)
+
+            else:
+                self.log('Unhandled message type: %s' % data['data']['messageType'])
+            
+        except KeyError as e:
+            self.log('Invalid message format for data (%s) - %s' % (data, e))
 
     def on_connect(self, client, *args, **kwargs):
         self.log('connected')
