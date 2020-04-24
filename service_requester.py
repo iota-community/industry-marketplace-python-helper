@@ -8,15 +8,18 @@ class ServiceRequester(IndustryMarketplace):
     fund_wallet = True
     gps_coords = '54.000, 4.000'
 
-    endpoint = 'http://localhost:4001'
+    endpoint = 'http://localhost:4000'
     
     def on_proposal(self, data, irdi, submodels):
         '''
         Accept only if the price is between 5 and 15
         '''
+        self.log('on proposal called!')
         try:
             price = self.get_price(irdi, submodels)
-            self.log('Received proposal for %si' % price)
+            self.log('Received proposal for %si for irdi %s' % (price, irdi))
+            if not price:
+                self.log('Price not found, submodels: %s' % submodels)
 
             if price >= 5 and price <= 15:
                 self.log('Accepting proposal')
@@ -25,8 +28,7 @@ class ServiceRequester(IndustryMarketplace):
                 self.log('Rejecting proposal')
                 self.reject_proposal(data)
         except Exception as e:
-            self.log('Error on accepting', e)
-            pprint.pprint(data)
+            self.log('Error on accepting: %s' % e)
 
     def on_inform_confirm(self, data, irdi, submodels):
         self.log('Offer confirmed, time to pay')

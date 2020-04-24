@@ -8,7 +8,7 @@ class ServiceProvider(IndustryMarketplace):
     fund_wallet = False
     gps_coords = '54.123, 4.321'
     
-    endpoint = 'http://localhost:4000'
+    endpoint = 'http://localhost:4001'
 
     def on_cfp(self, data, irdi, submodels):
         '''

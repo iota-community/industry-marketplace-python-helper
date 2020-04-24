@@ -64,7 +64,7 @@ class IndustryMarketplace:
         Get the price for a irdi from the submodels
         '''
         try:
-            return [x.value for x in self.eclass[irdi]['submodelElements'] if x['idShort'] == 'price'][0]
+            return [x['value'] for x in submodels.values() if x['idShort'] == 'price'][0]
         except IndexError:
             return None
 
@@ -83,13 +83,17 @@ class IndustryMarketplace:
         return config
     
     def api(self, uri, data=None):
-        if data:
-            resp = requests.post('%s/%s' % (self.endpoint, uri), json=data, timeout=15)
-            #self.log('POST body: %s' % json.dumps(data))
-            return resp.json()
-        else:
-            resp = requests.get('%s/%s' % (self.endpoint, uri), timeout=15)
-            return resp.json()
+        try:
+            if data:
+                resp = requests.post('%s/%s' % (self.endpoint, uri), json=data, timeout=15)
+                #self.log('POST body: %s' % json.dumps(data))
+                return resp.json()
+            else:
+                resp = requests.get('%s/%s' % (self.endpoint, uri), timeout=15)
+                return resp.json()
+        except requests.exceptions.ConnectionError as e:
+            self.log('Unable to connect to Industry Marketmanager ServiceApp; Make sure it is running on %s' % self.endpoint)
+            exit(1)
 
     def user(self):
         user = self.api('user')
@@ -114,10 +118,10 @@ class IndustryMarketplace:
             location = ''
 
         if not start_at:
-            start_at = datetime.datetime.now()
+            start_at = datetime.datetime.now() + datetime.timedelta(minutes=10)
 
         if not end_at:
-            end_at = start_at + datetime.timedelta(minutes=10)
+            end_at = start_at + datetime.timedelta(minutes=20)
 
         start_ts = int(start_at.timestamp()) * 1000
         end_ts = int(end_at.timestamp()) * 1000
@@ -276,6 +280,7 @@ class IndustryMarketplace:
 
         self.mqtt_id = data.get('id')
         self.mqtt_client.on_connect = self.on_connect
+        self.mqtt_client.on_disconnect = self.on_disconnect
         self.mqtt_client.on_message = self.on_message
         self.mqtt_client.connect(self.mqtt_broker, self.mqtt_port, self.mqtt_timeout)
         self.mqtt_client.loop_forever()
@@ -342,12 +347,15 @@ class IndustryMarketplace:
         
         try:
             self.log('Received %s from %s' % (data['data']['messageType'], data['data']['data']['userName']))
-
-            dat = data['data']['data']
-            first_request = dat['dataElements']['submodels'][0]['identification']
-            irdi = first_request['id']
-            submodels = first_request['submodelElements']
-            submodeldict = dict([(x['semanticId'], x) for x in submodels])
+            
+            try:
+                dat = data['data']['data']
+                first_request = dat['dataElements']['submodels'][0]['identification']
+                irdi = first_request['id']
+                submodels = first_request['submodelElements']
+                submodeldict = dict([(x['semanticId'], x) for x in submodels])
+            except Exception as e:
+                self.log('Error getting data: %s' % e)
 
 
             if data['data']['messageType'] == 'proposal':
@@ -378,4 +386,6 @@ class IndustryMarketplace:
         self.log('connected')
         self.mqtt_client.subscribe(self.mqtt_id)
         self.log('subscribed to %s' % self.mqtt_id)
-    
+
+    def on_disconnect(self, client, *arg, **kwargs):
+        self.log('mqtt disconnected')
